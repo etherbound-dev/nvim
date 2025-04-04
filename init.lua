@@ -33,7 +33,7 @@ vim.schedule(function()
 end)
 
 -- Enable break indent
-vim.opt.breakindent = true
+-- vim.opt.breakindent = true
 
 -- Save undo history
 vim.opt.undofile = true
@@ -49,7 +49,7 @@ vim.opt.signcolumn = "yes"
 vim.opt.updatetime = 250
 
 -- Decrease mapped sequence wait time
-vim.opt.timeoutlen = 300
+vim.opt.timeoutlen = 1000
 
 -- Configure how new splits should be opened
 vim.opt.splitright = true
@@ -122,13 +122,24 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
 	"tpope/vim-sleuth",
 	{
-		"nyoom-engineering/oxocarbon.nvim",
-		name = "oxocarbon",
+		"navarasu/onedark.nvim",
+		name = "onedark",
 		priority = 1000,
 		config = function()
-			vim.cmd.colorscheme("oxocarbon")
+			require("onedark").setup({
+				style = "dark",
+			})
+			vim.cmd.colorscheme("onedark")
 		end,
 	},
+	-- {
+	-- 	"nyoom-engineering/oxocarbon.nvim",
+	-- 	name = "oxocarbon",
+	-- 	priority = 1000,
+	-- 	config = function()
+	-- 		vim.cmd.colorscheme("oxocarbon")
+	-- 	end,
+	-- },
 	{ -- Adds git related signs to the gutter, as well as utilities for managing changes
 		"lewis6991/gitsigns.nvim",
 		opts = {
@@ -1109,10 +1120,11 @@ require("lazy").setup({
 						-- set group index to 0 to skip loading LuaLS completions as lazydev recommends it
 						group_index = 0,
 					},
-					{ name = "nvim_lsp" },
-					{ name = "luasnip" },
-					{ name = "path" },
-					{ name = "nvim_lsp_signature_help" },
+					{ name = "nvim_lsp", group_index = 2 },
+					{ name = "luasnip", group_index = 2 },
+					{ name = "path", group_index = 2 },
+					{ name = "nvim_lsp_signature_help", group_index = 2 },
+					{ name = "copilot", group_index = 1, priority = 100 },
 				},
 			})
 		end,
@@ -1200,6 +1212,29 @@ require("lazy").setup({
 			vim.g.neominimap = {
 				auto_enable = false,
 			}
+		end,
+	},
+	{
+		"zbirenbaum/copilot.lua",
+		cmd = "Copilot",
+		build = ":Copilot auth",
+		event = "BufReadPost",
+		opts = {
+			suggestion = { enabled = false },
+			panel = { enabled = false },
+			filetypes = {
+				markdown = true,
+				help = true,
+				c = true,
+				cmake = true,
+				lua = true,
+			},
+		},
+	},
+	{
+		"zbirenbaum/copilot-cmp",
+		config = function()
+			require("copilot_cmp").setup()
 		end,
 	},
 })
