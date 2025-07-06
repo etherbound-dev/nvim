@@ -34,6 +34,7 @@ return {
         git_icons = true,
         file_icons = true,
         color_icons = true,
+        fd_opts = "--color=never --type f --hidden --follow --exclude .git",
       },
       grep = {
         prompt = "Rg> ",
@@ -41,6 +42,7 @@ return {
         git_icons = true,
         file_icons = true,
         color_icons = true,
+        rg_opts = "--column --line-number --no-heading --color=always --smart-case --hidden --glob '!.git'",
       },
     })
   end,
