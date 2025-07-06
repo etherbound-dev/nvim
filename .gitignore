@@ -1,0 +1,55 @@
+# Neovim generated files
+.netrwhist
+*~
+*.swp
+*.swo
+*.swn
+*.swap
+*.bak
+*.tmp
+
+# Session files
+Session.vim
+*.vim.session
+
+# Tags
+tags
+.tags
+!tags/
+!.tags/
+
+# Lazy.nvim
+lazy-lock.json.backup
+
+# Language servers and tools
+.luarc.json
+.stylua.toml
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup and undo files
+*.backup
+*.undo
+
+# Log files
+*.log
+.nvim.log
+
+# Local plugin development
+/plugin-dev/
+/local-plugins/
+
+# Personal notes
+/notes/
+*.personal
+*.local
+
+# Compiled Lua
+*.luac
