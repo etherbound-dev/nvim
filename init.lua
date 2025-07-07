@@ -66,6 +66,9 @@ for i = 1, 9 do
   vim.keymap.set('n', '<leader>b' .. i, '<cmd>buffer ' .. i .. '<cr>', { desc = "Go to buffer " .. i })
 end
 
+-- File explorer keymap
+vim.keymap.set('n', '<leader>e', '<cmd>Explore<cr>', { desc = "Open file explorer" })
+
 -- Window management keymaps
 vim.keymap.set('n', '<leader>wv', '<cmd>vsplit<cr>', { desc = "Split window vertically" })
 vim.keymap.set('n', '<leader>ws', '<cmd>split<cr>', { desc = "Split window horizontally" })
