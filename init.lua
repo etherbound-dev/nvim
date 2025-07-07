@@ -66,8 +66,7 @@ for i = 1, 9 do
   vim.keymap.set('n', '<leader>b' .. i, '<cmd>buffer ' .. i .. '<cr>', { desc = "Go to buffer " .. i })
 end
 
--- File explorer keymap
-vim.keymap.set('n', '<leader>e', '<cmd>Explore<cr>', { desc = "Open file explorer" })
+-- File explorer keymap is now in lua/plugins/explorer.lua
 
 -- Window management keymaps
 vim.keymap.set('n', '<leader>wv', '<cmd>vsplit<cr>', { desc = "Split window vertically" })
@@ -157,7 +156,7 @@ vim.diagnostic.config({
 })
 
 -- Diagnostic keymaps
-vim.keymap.set('n', '<space>e', vim.diagnostic.open_float)
+vim.keymap.set('n', '<space>cd', vim.diagnostic.open_float, { desc = "Open diagnostic float" })
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev)
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next)
 vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist)
