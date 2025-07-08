@@ -52,8 +52,8 @@ vim.keymap.set('n', '<leader>fd', '<cmd>FzfLua diagnostics_document<cr>', { desc
 vim.keymap.set('n', '<leader>fr', '<cmd>FzfLua lsp_references<cr>', { desc = "LSP references" })
 
 -- Buffer management keymaps
-vim.keymap.set('n', '<leader>bd', '<cmd>bdelete<cr>', { desc = "Delete buffer" })
-vim.keymap.set('n', '<leader>bD', '<cmd>bdelete!<cr>', { desc = "Force delete buffer" })
+vim.keymap.set('n', '<leader>bd', '<cmd>BufferClose<cr>', { desc = "Delete buffer" })
+vim.keymap.set('n', '<leader>bD', '<cmd>BufferClose!<cr>', { desc = "Force delete buffer" })
 vim.keymap.set('n', '<leader>bn', '<cmd>bnext<cr>', { desc = "Next buffer" })
 vim.keymap.set('n', '<leader>bp', '<cmd>bprevious<cr>', { desc = "Previous buffer" })
 vim.keymap.set('n', '<leader>bb', '<cmd>FzfLua buffers<cr>', { desc = "Switch buffer" })
@@ -124,11 +124,69 @@ local function setup_lsp()
   vim.api.nvim_create_autocmd('FileType', {
     group = lsp_group,
     pattern = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact' },
-    callback = function()
+    callback = function(event)
+      local bufnr = event.buf
+      
+      -- Custom root directory finder that respects submodule boundaries
+      local function find_root()
+        local current_file = vim.api.nvim_buf_get_name(bufnr)
+        local current_dir = vim.fs.dirname(current_file)
+        
+        -- First, try to find package.json or tsconfig.json
+        local markers = vim.fs.find({ 'package.json', 'tsconfig.json' }, {
+          upward = true,
+          path = current_dir,
+        })
+        
+        if markers[1] then
+          return vim.fs.dirname(markers[1])
+        end
+        
+        -- If no package.json/tsconfig.json found, use the nearest .git
+        -- This ensures submodules use their own .git as root
+        local git_dir = vim.fs.find({ '.git' }, {
+          upward = true,
+          path = current_dir,
+        })
+        
+        if git_dir[1] then
+          return vim.fs.dirname(git_dir[1])
+        end
+        
+        -- Fallback to current directory
+        return current_dir
+      end
+      
+      local root_dir = find_root()
+      
+      -- Check if we already have a client for this specific root
+      local clients = vim.lsp.get_clients({ bufnr = bufnr })
+      for _, client in pairs(clients) do
+        if client.name == 'ts_ls' and client.config.root_dir == root_dir then
+          -- Already have the right client attached
+          return
+        elseif client.name == 'ts_ls' and client.config.root_dir ~= root_dir then
+          -- Wrong client attached, detach it from this buffer
+          vim.lsp.buf_detach_client(bufnr, client.id)
+        end
+      end
+      
+      -- Look for existing client with matching root
+      local all_clients = vim.lsp.get_clients({ name = 'ts_ls' })
+      for _, client in pairs(all_clients) do
+        if client.config.root_dir == root_dir then
+          -- Attach existing client to this buffer
+          vim.lsp.buf_attach_client(bufnr, client.id)
+          return
+        end
+      end
+      
+      -- No suitable client found, start a new one
       vim.lsp.start({
         name = 'ts_ls',
         cmd = { 'typescript-language-server', '--stdio' },
-        root_dir = vim.fs.dirname(vim.fs.find({ 'tsconfig.json', 'package.json', '.git' }, { upward = true })[1]),
+        root_dir = root_dir,
+        single_file_support = false,
         capabilities = (function()
           local capabilities = vim.lsp.protocol.make_client_capabilities()
           -- Try to use cmp_nvim_lsp if available
@@ -138,6 +196,8 @@ local function setup_lsp()
           end
           return capabilities
         end)(),
+      }, {
+        bufnr = bufnr,
       })
     end,
   })
@@ -160,6 +220,73 @@ vim.keymap.set('n', '<space>cd', vim.diagnostic.open_float, { desc = "Open diagn
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev)
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next)
 vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist)
+
+-- Debug keymap to show LSP root directory
+vim.keymap.set('n', '<leader>lr', function()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local buf_clients = vim.lsp.get_clients({ bufnr = bufnr })
+  
+  print("=== Current Buffer LSP Clients ===")
+  if next(buf_clients) == nil then
+    print("No LSP clients attached to current buffer")
+  else
+    for _, client in pairs(buf_clients) do
+      print(string.format("  %s: %s", client.name, client.config.root_dir))
+    end
+  end
+  
+  print("\n=== All Active LSP Clients ===")
+  local all_clients = vim.lsp.get_clients()
+  for _, client in pairs(all_clients) do
+    local attached_buffers = vim.lsp.get_buffers_by_client_id(client.id)
+    print(string.format("  %s: %s (attached to %d buffers)", 
+      client.name, client.config.root_dir, #attached_buffers))
+  end
+end, { desc = "Show LSP root directories" })
+
+-- Debug keymap for ESLint
+vim.keymap.set('n', '<leader>le', function()
+  local current_file = vim.api.nvim_buf_get_name(0)
+  local current_dir = vim.fs.dirname(current_file)
+  
+  print("Current file: " .. current_file)
+  print("Current dir: " .. current_dir)
+  
+  -- Check for eslint config
+  local config_files = {
+    ".eslintrc",
+    ".eslintrc.js",
+    ".eslintrc.cjs",
+    ".eslintrc.yaml",
+    ".eslintrc.yml",
+    ".eslintrc.json",
+    "eslint.config.js",
+    "eslint.config.mjs",
+    "eslint.config.cjs",
+  }
+  
+  local found = vim.fs.find(config_files, {
+    upward = true,
+    path = current_dir,
+    stop = vim.loop.os_homedir(),
+  })
+  
+  if found[1] then
+    print("ESLint config found: " .. found[1])
+    print("ESLint working directory: " .. vim.fs.dirname(found[1]))
+  else
+    print("No ESLint config found!")
+  end
+  
+  -- Test eslint_d directly
+  local cmd = string.format("cd %s && eslint_d --print-config %s", vim.fs.dirname(found[1] or current_file), current_file)
+  local result = vim.fn.system(cmd)
+  if vim.v.shell_error ~= 0 then
+    print("ESLint error: " .. result)
+  else
+    print("ESLint is working correctly")
+  end
+end, { desc = "Debug ESLint configuration" })
 
 -- Show diagnostics in a floating window on hover
 vim.o.updatetime = 250

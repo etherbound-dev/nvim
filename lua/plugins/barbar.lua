@@ -27,12 +27,12 @@ return {
     icons = {
       buffer_index = false,
       buffer_number = false,
-      button = "",
+      button = "󰅖",
       diagnostics = {
-        [vim.diagnostic.severity.ERROR] = { enabled = true, icon = "ﬀ" },
-        [vim.diagnostic.severity.WARN] = { enabled = false },
-        [vim.diagnostic.severity.INFO] = { enabled = false },
-        [vim.diagnostic.severity.HINT] = { enabled = true },
+        [vim.diagnostic.severity.ERROR] = { enabled = true, icon = " " },
+        [vim.diagnostic.severity.WARN] = { enabled = true, icon = " " },
+        [vim.diagnostic.severity.INFO] = { enabled = true, icon = " " },
+        [vim.diagnostic.severity.HINT] = { enabled = true, icon = "󰌵 " },
       },
       gitsigns = {
         added = { enabled = true, icon = "+" },
@@ -45,11 +45,11 @@ return {
       },
       separator = { left = "▎", right = "" },
       modified = { button = "●" },
-      pinned = { button = "", filename = true },
+      pinned = { button = "󰐃", filename = true },
       preset = "default",
       alternate = { filetype = { enabled = false } },
       current = { buffer_index = true },
-      inactive = { button = "×" },
+      inactive = { button = "󰅖" },
       visible = { modified = { buffer_number = false } },
     },
 
