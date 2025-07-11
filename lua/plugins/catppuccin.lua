@@ -3,19 +3,11 @@ return {
   name = "catppuccin",
   priority = 1000,
   config = function()
-    -- Function to determine theme based on time
-    local function get_theme_by_time()
-      local hour = tonumber(os.date("%H"))
-      -- Use latte (light) theme from 6 AM to 6 PM, mocha (dark) otherwise
-      if hour >= 6 and hour < 18 then
-        return "latte"
-      else
-        return "mocha"
-      end
-    end
+    -- Store current theme in global variable
+    vim.g.catppuccin_flavour = vim.g.catppuccin_flavour or "latte"
 
     require("catppuccin").setup({
-      flavour = get_theme_by_time(),
+      flavour = vim.g.catppuccin_flavour,
       background = {
         light = "latte",
         dark = "mocha",
@@ -63,16 +55,14 @@ return {
     -- Set colorscheme
     vim.cmd.colorscheme "catppuccin"
 
-    -- Auto-update theme every hour
-    vim.api.nvim_create_augroup("CatppuccinTimeTheme", { clear = true })
-    vim.api.nvim_create_autocmd({ "VimEnter", "FocusGained" }, {
-      group = "CatppuccinTimeTheme",
-      callback = function()
-        local current_theme = get_theme_by_time()
-        if require("catppuccin").flavour ~= current_theme then
-          vim.cmd("Catppuccin " .. current_theme)
-        end
-      end,
-    })
+    -- Function to toggle between latte and mocha
+    vim.api.nvim_create_user_command("CatppuccinToggle", function()
+      if vim.g.catppuccin_flavour == "mocha" then
+        vim.g.catppuccin_flavour = "latte"
+      else
+        vim.g.catppuccin_flavour = "mocha"
+      end
+      vim.cmd("Catppuccin " .. vim.g.catppuccin_flavour)
+    end, {})
   end,
 }

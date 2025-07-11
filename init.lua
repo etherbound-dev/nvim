@@ -25,7 +25,7 @@ vim.opt.swapfile = false
 vim.opt.backup = false
 vim.opt.undodir = vim.fn.stdpath("data") .. "/undodir"
 vim.opt.undofile = true
-vim.opt.hlsearch = false
+vim.opt.hlsearch = true
 vim.opt.incsearch = true
 vim.opt.termguicolors = true
 vim.opt.scrolloff = 8
@@ -65,6 +65,12 @@ vim.keymap.set('n', '<leader>bo', '<cmd>%bdelete|edit#|bdelete<cr>', { desc = "C
 for i = 1, 9 do
   vim.keymap.set('n', '<leader>b' .. i, '<cmd>buffer ' .. i .. '<cr>', { desc = "Go to buffer " .. i })
 end
+
+-- Clear search highlighting with Escape
+vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<cr>', { desc = "Clear search highlighting" })
+
+-- Toggle between catppuccin-latte and catppuccin-mocha
+vim.keymap.set('n', '<leader>tt', '<cmd>CatppuccinToggle<cr>', { desc = "Toggle theme (latte/mocha)" })
 
 -- File explorer keymap is now in lua/plugins/explorer.lua
 
@@ -288,9 +294,9 @@ vim.keymap.set('n', '<leader>le', function()
   end
 end, { desc = "Debug ESLint configuration" })
 
--- Show diagnostics in a floating window on hover
+-- Show diagnostics in a floating window on hover (disabled)
 vim.o.updatetime = 250
-vim.cmd [[autocmd CursorHold,CursorHoldI * lua vim.diagnostic.open_float(nil, {focus=false})]]
+-- vim.cmd [[autocmd CursorHold,CursorHoldI * lua vim.diagnostic.open_float(nil, {focus=false})]]
 
 -- Automatically create directories when saving a file
 vim.api.nvim_create_autocmd("BufWritePre", {
